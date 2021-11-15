@@ -2,176 +2,62 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
+    <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=1">
+    <title>KIPS | COLORPICKER</title>
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,500,700,900|Ubuntu:400,500,700" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500&amp;family=Poppins:wght@500&amp;display=swap" rel="stylesheet">
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script src="utils.js"></script>
+    <link rel="stylesheet" href="colorpicker.css">
+    <script src="colorpicker.js"></script>
     <style>
-        body {
-            font-family: sans-serif;
-            font-weight: bold;
-            text-align: center;
-            background: #444;
-            color: hsl(0, 50%, 50%);
-        }
-        
-        #wrapper {
-            width: 225px;
-            height: 225px;
-            margin: 0px auto;
-            position: relative;
-        }
-        
-        #pointer-wrapper {
-            float: left;
-            left: 0px;
-            top: 0px;
-            position: absolute;
-            width: 225px;
-            height: 225px;
-            margin: 0px auto;
-            pointer-events: none;
-        }
-        
-        #pointer {
-            float: left;
-            top: 0;
-            left: 0;
-            position: relative;
-            width: 14px;
-            height: 14px;
-            border: 2px black solid;
-            border-radius: 50%;
-            pointer-events: none;
-        }
-        
-        #pointer-inner {
-            width: 70%;
-            height: 70%;
-            top: 0;
-            right: 0;
-            bottom: 0;
-            left: 0;
-            margin: auto;
-            margin: 0px auto;
-            pointer-events: none;
-            border: 2px white solid;
-            border-radius: 50%;
-            position: absolute;
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgb(77, 77, 77);
         }
         
         h2 {
             font-size: 24pt;
             user-select: none;
-        }
-        
-        canvas {
             width: 100%;
-            background: hsl(0, 0%, 100%);
-            border-radius: 50%;
-            cursor: pointer;
+            text-align: center;
+            margin-top: 0;
+            font-family: Montserrat;
         }
     </style>
 </head>
 
 <body>
     <h2 id="output">hsl(0, 50%, 50%)</h2>
-    <div id="wrapper">
-        <div id="pointer-wrapper">
-            <div id="pointer">
-                <div id="pointer-inner"></div>
-            </div>
-        </div>
-        <canvas width="512" height="512" id="input"></canvas>
-    </div>
 </body>
 <script>
-    var canvas = document.getElementById("input");
-    var output = document.getElementById("output");
-    var ctx = canvas.getContext("2d");
-    var pointer = document.getElementById("pointer");
-    var size = 512; //canvas大小
-    var realSize = 225; //屏幕真实尺寸
-    var border = 13; //白色边框宽
-    var realBorder = border / size * realSize; //边框宽对应的实际屏幕尺寸
-    //canvas中心点
-    var canvasCenter = {
-        x: size / 2,
-        y: size / 2
-    };
-    //真实尺寸中心点
-    var realCenter = {
-        x: realSize / 2,
-        y: realSize / 2,
-    };
-    //初始值
-    var mouseAngle = 0;
-    var mousePos = {
-        x: 0,
-        y: 0
-    };
-    var pointerRadius = 9; //聚焦点半径
-    var mouseDist = 50;
-    var mousePosX, mousePosY, limitX, limitY, clientRect, angle, inCircle;
-    //拖拽和点击
-    canvas.addEventListener("mousedown", function(e) {
-        mouseDown(e);
-
-        function mouseDown(e) {
-            clientRect = canvas.getBoundingClientRect();
-            mousePosX = (e.clientX - clientRect.left) * (canvas.width / canvas.offsetWidth);
-            mousePosY = (e.clientY - clientRect.top) * (canvas.height / canvas.offsetHeight);
-            angle = 180 + (Math.atan2(canvasCenter.y - mousePosY, canvasCenter.x - mousePosX)) * 180 / Math.PI;
-            mouseDist = Math.round((Math.min(canvasCenter.y, Math.sqrt(Math.pow(canvasCenter.x - mousePosX, 2) + Math.pow(canvasCenter.y - mousePosY, 2))) / canvasCenter.y) * 100);
-            mouseAngle = Math.round(angle % 360);
-            // mousePos.x = x;
-            // mousePos.y = y;
-            inCircle = Math.pow(e.clientX - clientRect.left - realSize / 2, 2) + Math.pow(e.clientY - clientRect.top - realSize / 2, 2) <= Math.pow(realSize / 2 - pointerRadius - realBorder, 2)
-            pointer.style.top = (inCircle ? (e.clientY - clientRect.top - pointerRadius) : (realCenter.y + (realCenter.x - pointerRadius - realBorder) * Math.sin(mouseAngle / 180 * Math.PI) - pointerRadius)) + "px";
-            pointer.style.left = (inCircle ? (e.clientX - clientRect.left - pointerRadius) : (realCenter.x + (realCenter.x - pointerRadius - realBorder) * Math.cos(mouseAngle / 180 * Math.PI) - pointerRadius)) + "px";
-
-            output.style.color = output.innerHTML = "hsl(" + mouseAngle + "," + mouseDist + "%, 50%)";
-        }
-
-        document.addEventListener("mousemove", mouseDown, false);
-
-        document.addEventListener("mouseup", function(e) {
-            document.removeEventListener("mousemove", mouseDown, false);
+    $(document).ready(() => {
+        let info = Utils.checkDeviceType(navigator.userAgent);
+        let isMobile = info.isMobile;
+        let picker = new Colorpicker({
+            onchange: color => {
+                let c = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
+                $("#output").css({
+                    color: c,
+                });
+                let hsl = picker.rgb2hsl(color.r, color.g, color.b);
+                // console.log(hsl);
+                $("#output").html("hsl(" + hsl.h + "," + hsl.s + "%," + hsl.l + "%)");
+            },
+            isMobile: isMobile,
         });
+        picker.show();
+        $("#output").css({
+            color: "rgb(255, 109, 153)"
+        });
+        picker.setPointerByRGB(255, 109, 153);
     });
-    // 外部传入hsl色值进行pointer的位置设置
-    function setPointerByHSL(h, s) {
-        let x = realCenter.x + Math.cos(h / 180 * Math.PI) * (realCenter.x - pointerRadius - realBorder) * s - pointerRadius;
-        let y = realCenter.y + Math.sin(h / 180 * Math.PI) * (realCenter.y - pointerRadius - realBorder) * s - pointerRadius;
-        pointer.style.left = x + "px";
-        pointer.style.top = y + "px";
-    }
-    createPanel();
-    setPointerByHSL(90, 0.5);
-
-    //创建色板
-    function createPanel() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        ctx.lineWidth = 5;
-        var gradient, endX, endY;
-        for (var i = 0; i < 360; i++) {
-            endX = canvasCenter.x + (canvasCenter.x - border) * Math.cos((i / 180) * Math.PI);
-            endY = canvasCenter.y + (canvasCenter.y - border) * Math.sin((i / 180) * Math.PI);
-            gradient = ctx.createLinearGradient(canvasCenter.x, canvasCenter.y, endX, endY);
-            gradient.addColorStop(0, "white");
-            ctx.beginPath();
-            gradient.addColorStop(1, "hsl(" + i + "," + 100 + "%, " + 50 + "%)");
-            ctx.strokeStyle = gradient;
-            ctx.moveTo(canvasCenter.x, canvasCenter.y);
-            ctx.lineTo(endX, endY);
-            ctx.stroke();
-        }
-    }
-
-    function color2pos() {
-
-    }
 </script>
 
 </html>
